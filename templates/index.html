@@ -9,7 +9,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
   <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-  <script src="https://code.highcharts.com/highcharts.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <!-- Vendor CSS Files -->
   <link href="{{url_for('static',filename='assets/vendor/aos/aos.css')}}" rel="stylesheet">
   <link href="{{url_for('static',filename='assets/vendor/bootstrap/css/bootstrap.min.css')}}" rel="stylesheet">
@@ -44,8 +45,33 @@
             background-color: #dc3545;
             color: #ffffff;
         }
+        /* Default Light Theme */
+body.light-theme {
+    background-color: #f8f9fa; /* Bootstrap's light background */
+    color: #000;
+}
+
+/* Dark Theme */
+body.dark-theme {
+    background-color: #343a40; /* Bootstrap's dark background */
+    color: #fff;
+}
+
+/* Example styling for your cards and text */
+.card {
+    border: 1px solid rgba(0,0,0,0.125);
+    background-color: #fff;
+}
+
+body.dark-theme .card {
+    border: 1px solid rgba(255,255,255,0.125);
+    background-color: #444;
+}
+
+/* Make sure to adjust other elements as necessary */
+
 </style>
-<body>
+<body class="light-theme">
   <!-- ======= Mobile nav toggle button ======= -->
   <i class="bi bi-list mobile-nav-toggle d-xl-none"></i>
 
@@ -54,7 +80,12 @@
     <div class="d-flex flex-column">
 
       <div class="profile">
-        <img src="{{url_for('static',filename='assets/img/q1.png')}}" alt="" class="img-fluid rounded-circle">
+        <img src="{{url_for('static',filename='assets/img/q1.png')}}" 
+     alt="Toggle Theme" 
+     id="themeToggle" 
+     class="img-fluid rounded-circle" 
+     style="background-color: #004BAB; cursor: pointer;">
+
         <h1 class="text-light"><a href="index.html">Quantum Doctor</a></h1>
    
       </div>
@@ -193,6 +224,25 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('confirmLogout').addEventListener('click', function() {
     window.location.href = "{{ url_for('logout') }}";
   });
+});
+document.addEventListener('DOMContentLoaded', function() {
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.addEventListener('click', function() {
+        document.body.classList.toggle('dark-theme');
+        document.body.classList.toggle('light-theme');
+
+        // Optional: Save theme preference to local storage
+        const isDarkTheme = document.body.classList.contains('dark-theme');
+        localStorage.setItem('preferredTheme', isDarkTheme ? 'dark' : 'light');
+    });
+
+    // Apply the saved theme preference on load
+    const savedTheme = localStorage.getItem('preferredTheme');
+    if (savedTheme) {
+        document.body.classList.add(savedTheme === 'dark' ? 'dark-theme' : 'light-theme');
+    } else {
+        document.body.classList.add('light-theme'); // default to light theme
+    }
 });
 
 </script>
