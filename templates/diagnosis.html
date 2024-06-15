@@ -1,0 +1,209 @@
+{% extends 'index.html' %}
+{% block content %}
+<title>Symptoms and Diagnosis</title>
+
+<style>
+    .chat-container {
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        height: 500px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        padding: 20px;
+        background-color: #ffffff;
+    }
+    .chat-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #6c757d;
+    }
+    .chat-messages {
+        overflow-y: auto;
+        flex-grow: 1;
+        margin-top: 10px;
+        margin-bottom: 10px;
+    }
+    .chat-message {
+        margin: 5px 0;
+        padding: 10px;
+        border-radius: 10px;
+        background-color: #f1f1f1;
+    }
+    .chat-input {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+    .chat-input input {
+        flex-grow: 1;
+        border-radius: 10px;
+        padding: 10px;
+        padding-right: 90px; /* Space for buttons */
+        border: 1px solid #ced4da;
+        width: 100%;
+    }
+    .chat-input .btn-container {
+        position: absolute;
+        right: 10px;
+        display: flex;
+        gap: 5px;
+    }
+    .chat-input .btn-container button {
+        border-radius: 10px;
+        padding: 10px;
+        background-color: #004BAB;
+        border: none;
+        color: white;
+    }
+    .chat-input .btn-container button i {
+        font-size: 1.2rem;
+    }
+    .language-selector {
+        width: 100px;
+        margin-right: 10px;
+    }
+
+    /* Responsive styling */
+    @media (max-width: 576px) {
+        .chat-container {
+            padding: 10px;
+        }
+        .chat-header {
+            font-size: 1rem;
+        }
+        .chat-input .btn-container {
+            right: 5px;
+        }
+        .chat-input input {
+            padding-right: 70px; /* Adjust space for buttons */
+        }
+    }
+</style>
+
+<body class="bg-light">
+<main id="main">
+    <div class="container mt-5">
+        <div class="chat-container">
+            <div class="chat-header">
+                <span>Health Assessment</span>
+                <button class="btn btn-link" onclick="closeChat()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="chat-messages" id="chat-messages">
+                <!-- Messages will be appended here -->
+            </div>
+            <div class="chat-input">
+                <select id="language-selector" class="form-select language-selector">
+                    <option value="en">English</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                    <!-- Add more languages as needed -->
+                </select>
+                <input id="chat-input" type="text" placeholder="Type here">
+                <div class="btn-container">
+                    <button class="btn" onclick="sendMessage()">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                    <button class="btn" id="mic-btn">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // Function to close the chat window (optional)
+    function closeChat() {
+        // Add logic to close or hide the chat window
+    }
+
+    // Function to send a message
+    function sendMessage() {
+        const inputElement = document.getElementById('chat-input');
+        const message = inputElement.value;
+        if (message.trim() !== "") {
+            displayMessage('You', message);
+            inputElement.value = '';
+            // Send message to the Quantum Doctor and display the response
+            // This will be handled by your backend
+            sendToQuantumDoctor(message);
+        }
+    }
+
+    // Function to display a message in the chat
+    function displayMessage(sender, message) {
+        const messagesContainer = document.getElementById('chat-messages');
+        const messageElement = document.createElement('div');
+        messageElement.className = 'chat-message';
+        messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+        messagesContainer.appendChild(messageElement);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // Function to start voice input
+    function startVoiceInput() {
+        const language = document.getElementById('language-selector').value;
+
+        // Check for SpeechRecognition support
+        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = language;
+            recognition.interimResults = false; // Use final results for simplicity
+            recognition.maxAlternatives = 1; // Limit to one alternative
+
+            // Start recognition
+            recognition.start();
+
+            recognition.onstart = function() {
+                console.log('Voice recognition started');
+                displayMessage('System', 'Listening...');
+            };
+
+            recognition.onresult = function(event) {
+                const speechResult = event.results[0][0].transcript;
+                displayMessage('You', speechResult);
+                // Send the voice input as text to the Quantum Doctor
+                sendToQuantumDoctor(speechResult);
+            };
+
+            recognition.onspeechend = function() {
+                recognition.stop();
+            };
+
+            recognition.onerror = function(event) {
+                console.error('Speech recognition error', event);
+                let errorMessage = 'Sorry, there was an error with voice recognition.';
+                if (event.error === 'no-speech') {
+                    errorMessage = 'No speech was detected. Please try again.';
+                } else if (event.error === 'audio-capture') {
+                    errorMessage = 'Microphone is not available or not working. Please check your device settings.';
+                } else if (event.error === 'not-allowed') {
+                    errorMessage = 'Permission to use microphone was denied. Please allow microphone access.';
+                }
+                displayMessage('System', errorMessage);
+            };
+        } else {
+            alert('Speech recognition is not supported in this browser. Please try using a supported browser.');
+        }
+    }
+
+    // Function to send the message to the Quantum Doctor
+    function sendToQuantumDoctor(message) {
+        // Replace this with the actual API call to your Quantum Doctor backend
+        // For now, we just simulate a response
+        setTimeout(() => {
+            displayMessage('Quantum Doctor', `I understand that your symptom is: ${message}. Let me analyze that.`);
+        }, 1000);
+    }
+
+    // Attach voice input to button
+    document.getElementById('mic-btn').addEventListener('click', startVoiceInput);
+</script>
+{% endblock content %}
