@@ -179,7 +179,12 @@ def profile():
 @app.route('/consultations')
 def consultations():
     return render_template('consultations.html')
-
+@app.route('/consultations/questions')
+def consultation_question():
+    return render_template('consultation_question.html')
+@app.route('/consultations/results')
+def consultation_result():
+    return render_template('consultation_result.html')
 @app.route('/successful_register')
 def successful_register():
     return render_template('successful_register.html')
