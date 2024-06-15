@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quantum Doctor - Login</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
+    <div class="card shadow p-4" style="width: 100%; max-width: 400px;">
+      <div class="text-center mb-3">
+        <img src="{{url_for('static',filename='assets/img/q1.png')}}" alt="Quantum Doctor Logo" class="logo-image">
+        <h2 class="h5 mt-2">Welcome back</h2>
+        <p class="text-muted">Your Well-Being is still our priority.<br> Personalized health insights await you.</p>
+      </div>
+      <form method="POST" action="/login">
+        <div class="mb-3">
+          <label for="email" class="form-label">Email address</label>
+          <input type="email" class="form-control" id="email" name="email" placeholder="johndoe@gmail.com" required>
+        </div>
+        <div class="mb-3">
+          <label for="password" class="form-label">Password</label>
+          <div class="input-group">
+            <input type="password" class="form-control" id="password" name="password" placeholder="********" required>
+            <span class="input-group-text"><i class="fa-solid fa-eye-slash" id="togglePassword"></i></span>
+          </div>
+          <small class="form-text text-muted">Should be at least 8 characters</small>
+        </div>
+        <div class="d-flex justify-content-between mb-3">
+          <a href="{{url_for('recover')}}" class="text-decoration-none">Forgot password?</a>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Log In</button>
+      </form>
+      <div class="text-center mt-3">
+        <small>Don’t have an account? <a href="{{ url_for('register') }}">Sign Up</a></small>
+
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Toggle Password Visibility
+    document.getElementById('togglePassword').addEventListener('click', function () {
+      const password = document.getElementById('password');
+      const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+      password.setAttribute('type', type);
+      this.classList.toggle('fa-eye');
+      this.classList.toggle('fa-eye-slash');
+    });
+  </script>
+</body>
+<style>
+    /* General Styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f6f9;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+}
+
+/* Container */
+.container {
+  width: 100%;
+  max-width: 400px;
+}
+
+/* Card Styling */
+.card {
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+/* Logo Image */
+.logo-image {
+  width: 60px;
+  height: 60px;
+}
+
+/* Form Styles */
+.form-label {
+  font-weight: 600;
+}
+
+.input-group-text {
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #004080;
+  border: none;
+}
+
+.btn-primary:hover {
+  background-color: #003366;
+}
+
+/* Text Centering */
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+.text-decoration-none {
+  text-decoration: none;
+}
+
+</style>
+</html>

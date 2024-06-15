@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recover Account - Quantum Doctor</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f5f5f5;
+            margin: 0;
+        }
+        .recovery-container {
+            background: white;
+            padding: 2em;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .recovery-container h1 {
+            font-size: 1.5em;
+            margin-bottom: 1em;
+            color: #0046be;
+        }
+        .recovery-container input[type="email"] {
+            width: 100%;
+            padding: 1em;
+            margin-bottom: 1em;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        .recovery-container button {
+            background-color: #0046be;
+            color: white;
+            padding: 1em;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1em;
+        }
+        .recovery-container button:hover {
+            background-color: #0038a0;
+        }
+        .back-link {
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+            color: #0046be;
+            margin-bottom: 1em;
+            font-size: 0.9em;
+        }
+        .back-link svg {
+            margin-right: 0.5em;
+        }
+    </style>
+</head>
+<body>
+    <div class="recovery-container">
+        <h2>Let’s help you recover your account</h2>
+        <form action="{{ url_for('recover') }}" method="post">
+            <input type="email" name="email" placeholder="Enter your email" required>
+            <button type="submit">Send reset email</button>
+        </form>
+        
+        <a href="{{ url_for('login') }}">Back to Login</a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,152 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f9;
+    color: #333;
+  }
+  /* Navbar */
+.navbar-brand .logo-image {
+    width: 40px;
+    height: 40px;
+  }
+  
+  /* Header Styles */
+  h3 {
+    font-weight: bold;
+    font-size: 1.75rem; /* Adjusted for better scaling */
+  }
+  
+  /* Health Tip Styles */
+  .card.one {
+    border-radius: 0.5rem;
+    background-color: #004BA8;
+  }
+  
+  .card.one .btn {
+    background-color: #0056b3;
+    border-color: #0056b3;
+  }
+  
+  .card.one .btn:hover {
+    background-color: #004BA8;
+    border-color: #004494;
+  }
+  
+  /* Vitals Card Styles */
+  .card {
+    border: none;
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+  }
+  
+  .card .card-body {
+    padding: 1rem; /* Adjusted for consistent spacing */
+  }
+  
+  .card .display-6 {
+    font-size: 2rem; /* Adjusted for better scaling */
+    font-weight: 700;
+  }
+  
+  .card .h6 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .card .card-text {
+    font-size: 0.875rem; /* Slightly smaller for better layout */
+  }
+  
+  /* Badge Styles */
+  .btn .badge {
+    font-size: 0.75rem;
+  }
+  
+  /* .vital-graph {
+    margin-top: 0.5rem;
+    height: 200px; 
+  }
+  
+  .vital-graph #temp-graph,
+  .vital-graph #bp-graph,
+  .vital-graph #hr-graph,
+  .vital-graph #oxygen-graph {
+    width: 100%;
+    height: 100%;
+  }   */
+  /* Footer Styles */
+.footer {
+    border-top: 1px solid #ddd;
+  }
+  
+  .footer a {
+    color: #333;
+  }
+  
+  .footer a:hover {
+    text-decoration: none;
+  }
+  
+  .footer .quantum-logo {
+    width: 60px;
+    height: 60px;
+    background-color: #004BA8; /* Darker blue background */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 auto; /* Center align */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Optional shadow */
+  }
+  .footer .quantum-logo .logo-image {
+    width: 30px; /* Adjust size */
+    height: 30px;
+  }
+  
+  .footer p {
+    font-size: 0.75rem;
+    margin: 0;
+  }
+  .vital-card {
+    border-radius: 10px;
+    padding: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    position: relative;
+    height: 230px;
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.vital-header {
+    display: flex;
+    align-items: center;
+}
+
+.vital-icon {
+    font-size: 1.5rem;
+    color: #007bff;
+    margin-right: 10px;
+}
+
+.vital-label {
+    font-size: 1rem;
+    color: #6c757d;
+}
+
+.vital-value {
+    font-size: 1.8rem;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.vital-status {
+    font-size: 0.9rem;
+    color: #28a745;
+}
+
+.vital-chart {
+    height: 60px !important;
+}
+  
