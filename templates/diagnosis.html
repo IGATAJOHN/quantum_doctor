@@ -1,209 +1,311 @@
-{% extends 'index.html' %}
-{% block content %}
-<title>Symptoms and Diagnosis</title>
-
-<style>
-    .chat-container {
-        border-radius: 10px;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        height: 500px;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        padding: 20px;
-        background-color: #ffffff;
-    }
-    .chat-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        font-size: 1.2rem;
-        font-weight: bold;
-        color: #6c757d;
-    }
-    .chat-messages {
-        overflow-y: auto;
-        flex-grow: 1;
-        margin-top: 10px;
-        margin-bottom: 10px;
-    }
-    .chat-message {
-        margin: 5px 0;
-        padding: 10px;
-        border-radius: 10px;
-        background-color: #f1f1f1;
-    }
-    .chat-input {
-        position: relative;
-        display: flex;
-        align-items: center;
-    }
-    .chat-input input {
-        flex-grow: 1;
-        border-radius: 10px;
-        padding: 10px;
-        padding-right: 90px; /* Space for buttons */
-        border: 1px solid #ced4da;
-        width: 100%;
-    }
-    .chat-input .btn-container {
-        position: absolute;
-        right: 10px;
-        display: flex;
-        gap: 5px;
-    }
-    .chat-input .btn-container button {
-        border-radius: 10px;
-        padding: 10px;
-        background-color: #004BAB;
-        border: none;
-        color: white;
-    }
-    .chat-input .btn-container button i {
-        font-size: 1.2rem;
-    }
-    .language-selector {
-        width: 100px;
-        margin-right: 10px;
-    }
-
-    /* Responsive styling */
-    @media (max-width: 576px) {
-        .chat-container {
-            padding: 10px;
-        }
-        .chat-header {
-            font-size: 1rem;
-        }
-        .chat-input .btn-container {
-            right: 5px;
-        }
-        .chat-input input {
-            padding-right: 70px; /* Adjust space for buttons */
-        }
-    }
-</style>
-
-<body class="bg-light">
-<main id="main">
-    <div class="container mt-5">
-        <div class="chat-container">
+{%extends 'index.html'%}
+{%block content%}
+<body>
+    <main id="main">
+        <div class="chat-container" style="margin-top: 0px; height: 100vh;">
+            <div class="chat-background"></div> <!-- Background layer -->
             <div class="chat-header">
-                <span>Health Assessment</span>
-                <button class="btn btn-link" onclick="closeChat()">
-                    <i class="fas fa-times"></i>
+                <h4 style="text-align: left;font-weight: bold;">Health Assessment</h4>
+                <button id="toggle-theme-btn" class="toggle-theme-btn">
+                    <i class="fas fa-adjust"></i>Theme
                 </button>
             </div>
-            <div class="chat-messages" id="chat-messages">
-                <!-- Messages will be appended here -->
+            <div id="chat-body" class="chat-body">
+                <!-- Initial bot message -->
+                 <!-- Loader for bot response -->
+
+
             </div>
-            <div class="chat-input">
-                <select id="language-selector" class="form-select language-selector">
-                    <option value="en">English</option>
-                    <option value="es">Spanish</option>
-                    <option value="fr">French</option>
-                    <!-- Add more languages as needed -->
-                </select>
-                <input id="chat-input" type="text" placeholder="Type here">
-                <div class="btn-container">
-                    <button class="btn" onclick="sendMessage()">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                    <button class="btn" id="mic-btn">
-                        <i class="fas fa-microphone"></i>
-                    </button>
-                </div>
+            <div id="loader" class="loader" style="display: none;"></div>
+            <div class="chat-input" style="margin-top: 0px;">
+                <input type="text" id="user-input" placeholder="Type a message">
+                <span id="voice-note-btn" class="voice-note-btn" onclick="toggleVoiceInput()">
+                    <i class="fas fa-microphone"></i>
+                </span>
+                <button id="send-btn">Send</button>
             </div>
         </div>
-    </div>
-</main>
+   
+    </main>
 
-<script>
-    // Function to close the chat window (optional)
-    function closeChat() {
-        // Add logic to close or hide the chat window
-    }
+    <script>
+document.getElementById('send-btn').addEventListener('click', () => {
+    const userInput = document.getElementById('user-input').value;
+    if (userInput.trim() === '') return;
+    sendUserMessage(userInput); // Send user message
+    document.getElementById('user-input').value = ''; // Clear input field
+});
 
-    // Function to send a message
-    function sendMessage() {
-        const inputElement = document.getElementById('chat-input');
-        const message = inputElement.value;
-        if (message.trim() !== "") {
-            displayMessage('You', message);
-            inputElement.value = '';
-            // Send message to the Quantum Doctor and display the response
-            // This will be handled by your backend
-            sendToQuantumDoctor(message);
+window.addEventListener('load', () => {
+    displayBotMessage('Hello! I\'m Quantum Doctor, how are you feeling today?', true);
+});
+
+document.getElementById('toggle-theme-btn').addEventListener('click', () => {
+    document.body.classList.toggle('dark-mode');
+});
+
+async function sendUserMessage(message) {
+    const chatBody = document.getElementById('chat-body');
+    const userMessage = document.createElement('div');
+    userMessage.classList.add('message', 'user');
+
+    // Get current timestamp
+    const timestamp = new Date().toLocaleTimeString();
+
+    userMessage.innerHTML = `<div class="text">${message}</div>
+                             <div class="timestamp">${timestamp}</div>`;
+    chatBody.appendChild(userMessage);
+
+    showLoader(); // Show loader while waiting for the bot response
+
+    try {
+        const response = await fetch('/get-response', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ input: message })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
-    }
 
-    // Function to display a message in the chat
-    function displayMessage(sender, message) {
-        const messagesContainer = document.getElementById('chat-messages');
-        const messageElement = document.createElement('div');
-        messageElement.className = 'chat-message';
-        messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
-        messagesContainer.appendChild(messageElement);
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }
-
-    // Function to start voice input
-    function startVoiceInput() {
-        const language = document.getElementById('language-selector').value;
-
-        // Check for SpeechRecognition support
-        if ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window) {
-            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
-            recognition.lang = language;
-            recognition.interimResults = false; // Use final results for simplicity
-            recognition.maxAlternatives = 1; // Limit to one alternative
-
-            // Start recognition
-            recognition.start();
-
-            recognition.onstart = function() {
-                console.log('Voice recognition started');
-                displayMessage('System', 'Listening...');
-            };
-
-            recognition.onresult = function(event) {
-                const speechResult = event.results[0][0].transcript;
-                displayMessage('You', speechResult);
-                // Send the voice input as text to the Quantum Doctor
-                sendToQuantumDoctor(speechResult);
-            };
-
-            recognition.onspeechend = function() {
-                recognition.stop();
-            };
-
-            recognition.onerror = function(event) {
-                console.error('Speech recognition error', event);
-                let errorMessage = 'Sorry, there was an error with voice recognition.';
-                if (event.error === 'no-speech') {
-                    errorMessage = 'No speech was detected. Please try again.';
-                } else if (event.error === 'audio-capture') {
-                    errorMessage = 'Microphone is not available or not working. Please check your device settings.';
-                } else if (event.error === 'not-allowed') {
-                    errorMessage = 'Permission to use microphone was denied. Please allow microphone access.';
-                }
-                displayMessage('System', errorMessage);
-            };
-        } else {
-            alert('Speech recognition is not supported in this browser. Please try using a supported browser.');
+        const data = await response.json();
+        if (data.error) {
+            throw new Error(data.error);
         }
+
+        displayBotMessage(data.response);
+    } catch (error) {
+        displayBotMessage(`An error occurred: ${error.message}`);
+    } finally {
+        hideLoader(); // Hide loader after getting the bot response
+    }
+}
+
+function displayBotMessage(response, initial = false) {
+    const chatBody = document.getElementById('chat-body');
+
+    // Create bot response container
+    const botContainer = document.createElement('div');
+    botContainer.classList.add('bot-container');
+
+    // Append bot icon
+    const botIcon = document.createElement('div');
+    botIcon.classList.add('bot-icon');
+
+    const customLogoSrc = '/static/assets/img/q1.png'; // Path to your logo
+    const logoImg = document.createElement('img');
+    logoImg.src = customLogoSrc;
+    logoImg.alt = 'Bot Logo';
+    logoImg.className = 'bot-logo'; // Add class for styling
+
+    botIcon.appendChild(logoImg);
+    botContainer.appendChild(botIcon);
+
+    // Get current timestamp
+    const timestamp = new Date().toLocaleTimeString();
+
+    // Append bot message
+    const botMessage = document.createElement('div');
+    botMessage.classList.add('message', 'bot');
+    botMessage.innerHTML = `<div class="text">${response}</div>
+                            <div class="timestamp">${timestamp}</div>
+                            ${initial ? '' : `
+                            <div class="feedback-icons">
+                                <span class="icon thumbs-up" onclick="likeMessage()">👍</span>
+                                <span class="icon thumbs-down" onclick="dislikeMessage()">👎</span>
+                                <span class="icon copy" onclick="copyMessage('${response}')">📋</span>
+                                <span class="icon speaker" onclick="textToSpeech('${response}')">🔊</span>
+                            </div>`}`;
+    botContainer.appendChild(botMessage);
+
+    chatBody.appendChild(botContainer);
+
+    // Scroll to bottom
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Show and hide loader functions
+function showLoader() {
+    document.getElementById('loader').style.display = 'block';
+}
+
+function hideLoader() {
+    document.getElementById('loader').style.display = 'none';
+}
+
+// Voice recognition variables
+let recognition;
+let selectedVoice;
+// Function to show loader
+function showLoader() {
+    const chatBody = document.getElementById('chat-body');
+
+    // Create a loader element
+    const loaderElement = document.createElement('div');
+    loaderElement.id = 'loader';
+    loaderElement.classList.add('loader');
+
+    // Append loader to chat body
+    chatBody.appendChild(loaderElement);
+
+    // Scroll to the bottom
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Function to hide loader
+function hideLoader() {
+    const loaderElement = document.getElementById('loader');
+    if (loaderElement) {
+        loaderElement.remove();
+    }
+}
+// JavaScript functions for icons
+function likeMessage(element) {
+    alert('You liked the message.');
+}
+
+function dislikeMessage(element) {
+    alert('You disliked the message.');
+}
+
+function copyMessage(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Message copied to clipboard.');
+    }).catch(err => {
+        console.error('Could not copy text: ', err);
+    });
+}
+// Initialize voices
+function initializeVoices() {
+    const voices = window.speechSynthesis.getVoices();
+    selectedVoice = voices.find(voice => voice.name.includes('Female') || voice.gender === 'female') || voices[0];
+
+    if (!selectedVoice) {
+        console.warn('No female voice found. Falling back to default voice.');
+        selectedVoice = voices[0];
+    }
+}
+
+// Ensure voices are loaded
+window.speechSynthesis.onvoiceschanged = initializeVoices;
+
+// Ensure voices are initialized on page load
+initializeVoices();
+
+// Toggle voice recognition
+function toggleVoiceInput() {
+    if (!recognition) {
+        startVoiceRecognition();
+    } else {
+        stopVoiceRecognition();
+    }
+}
+
+// Start voice recognition
+function startVoiceRecognition() {
+    recognition = new webkitSpeechRecognition(); // Initialize speech recognition
+    recognition.lang = 'en-US'; // Language setting
+    recognition.continuous = false; // Stop recognition after first result
+    recognition.interimResults = false; // Do not return interim results
+
+    recognition.onresult = function(event) {
+        const userInput = event.results[0][0].transcript; // Get recognized text
+        document.getElementById('user-input').value = userInput; // Update input field with recognized text
+        sendUserMessage(userInput); // Send message
+    };
+
+    recognition.start(); // Start recognition
+    console.log('Voice recognition started.');
+}
+
+// Stop voice recognition
+function stopVoiceRecognition() {
+    if (recognition) {
+        recognition.stop(); // Stop recognition
+        recognition = null; // Reset recognition
+        console.log('Voice recognition stopped.');
+    }
+}
+
+// JavaScript functions for icons
+function likeMessage(element) {
+    alert('You liked the message.');
+}
+
+function dislikeMessage(element) {
+    alert('You disliked the message.');
+}
+
+function copyMessage(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Message copied to clipboard.');
+    }).catch(err => {
+        console.error('Could not copy text: ', err);
+    });
+}
+
+function textToSpeech(text) {
+    const speech = new SpeechSynthesisUtterance(text);
+
+    // Set the selected voice (female) for speech synthesis
+    if (selectedVoice) {
+        speech.voice = selectedVoice;
     }
 
-    // Function to send the message to the Quantum Doctor
-    function sendToQuantumDoctor(message) {
-        // Replace this with the actual API call to your Quantum Doctor backend
-        // For now, we just simulate a response
-        setTimeout(() => {
-            displayMessage('Quantum Doctor', `I understand that your symptom is: ${message}. Let me analyze that.`);
-        }, 1000);
-    }
+    window.speechSynthesis.speak(speech);
+}
 
-    // Attach voice input to button
-    document.getElementById('mic-btn').addEventListener('click', startVoiceInput);
-</script>
-{% endblock content %}
+function getBotResponse(userInput) {
+    const apiUrl = 'http://192.168.115.11:5000/chatbot'; // URL of your Flask backend
+
+    return fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ message: userInput })
+    })
+    .then(response => response.json())
+    .then(data => data.reply) // Extract the reply from the response
+    .catch(error => {
+        console.error('Error fetching bot response:', error);
+        return "Thank you for providing your symptoms, now let me analyze them.";
+    });
+}
+
+// Send user message and process bot response
+function sendUserMessage(userInput) {
+    appendUserMessage(userInput);
+
+    // Call the API to get a response
+    getBotResponse(userInput).then(botResponse => {
+        appendBotMessage(botResponse);
+        textToSpeech(botResponse); // Automatically play the bot's response
+    });
+}
+
+// Append user's message to the chat
+function appendUserMessage(message) {
+    const chatBody = document.querySelector('.chat-body');
+    const userMessage = document.createElement('div');
+    userMessage.className = 'message user';
+    userMessage.textContent = message;
+    chatBody.appendChild(userMessage);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+// Append bot's message to the chat
+function appendBotMessage(message) {
+    const chatBody = document.querySelector('.chat-body');
+    const botMessage = document.createElement('div');
+    botMessage.className = 'message bot';
+    botMessage.textContent = message;
+    chatBody.appendChild(botMessage);
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
+
+    </script>
+{%endblock content%}
