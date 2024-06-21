@@ -68,8 +68,7 @@ body {
     font-family: 'Roboto', sans-serif;
     background: var(--background);
     color: var(--text-color);
-    height: 100%;
-    overflow: hidden;
+    overflow:hidden;
 }
 
 :root {
