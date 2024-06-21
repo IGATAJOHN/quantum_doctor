@@ -259,7 +259,7 @@ function textToSpeech(text) {
 }
 
 function getBotResponse(userInput) {
-    const apiUrl = 'http://192.168.115.11:5000/chatbot'; // URL of your Flask backend
+    const apiUrl = 'https://quantum-doctor.onrender.com/chatbot'; // URL of your Flask backend
 
     return fetch(apiUrl, {
         method: 'POST',
