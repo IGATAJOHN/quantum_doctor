@@ -4,3 +4,4 @@ flask_login
 flask_sqlalchemy
 flask_mail
 flask_migrate
+python-dotenv
