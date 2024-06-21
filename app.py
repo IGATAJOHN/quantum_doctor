@@ -35,7 +35,8 @@ class User(db.Model, UserMixin):
     last_name = db.Column(db.String(150), nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
-
+    def __repr__(self):
+        return f'<User {self.username}>'
 # Initialize Flask-Login
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -47,7 +48,10 @@ with app.app_context():
 @login_manager.user_loader
 def load_user(user_id):
     return db.session.get(User, int(user_id))
-
+@app.route('/users')
+def user_list():
+    users = User.query.all()
+    return render_template('users.html', users=users)
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
