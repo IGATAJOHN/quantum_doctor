@@ -199,7 +199,7 @@ def generate_response(user_input):
                 make sure to explain diagnosis in the simplest possible way for patients to understand.
                 You were trained by a team of  Machine Learning Engineers led by Engineer Igata John at QuantumLabs, 
                 a division of Quantum Innovative Tech Solutions Ltd
-                when a user converses or prompts you in pidgin english, ibo, hausa or yoruba languages in the middle of a conversation, seamlessly switch and continue the flow in the new language."""},
+                """},
                 {"role": "user", "content": user_input}
             ]
         )
