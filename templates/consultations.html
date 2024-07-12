@@ -1,14 +1,525 @@
-{%extends 'index.html'%}
-{%block content%}
-    <title>Diagnosis</title>
-<body class="bg-light">
-<main id="main">
-<div class="container">
-    <div class="question-container bg-white shadow-sm rounded p-4">
-        <h5>Tell me the symptom that's troubling you the most</h5>
-        <textarea class="form-control mb-3" rows="3"></textarea>
-        <button class="btn btn-primary">Submit</button>
-    </div>
-</div>
-</main>
-{%endblock content%}
+<!-- consultations.html -->
+{% extends 'index.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<style>
+    /* styles.css */
+    /* styles.css */
+    .consultations-main {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 20px;
+        min-height: 100vh;
+        background: #f9f9f9;
+    }
+
+    .consultations-container {
+        width: 100%;
+        max-width: 1000px;
+        background: white;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        border-radius: 8px;
+        padding: 20px;
+    }
+
+    .search-bar {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .search-bar input {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-right: 10px;
+    }
+
+    .search-bar button {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        color: #007bff;
+    }
+
+    .doctor-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .doctor-card {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        padding: 15px;
+        border: 1px solid #eee;
+        border-radius: 20px;
+        transition: background 0.2s;
+    }
+
+    .doctor-card:hover {
+        background: #f0f0f0;
+    }
+
+    .doctor-avatar-container {
+        position: relative;
+        width: 60px;
+        height: 60px;
+        margin-right: 20px;
+    }
+
+    .doctor-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+    }
+
+    .status-indicator {
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        border: 2px solid white;
+        /* Border for better visibility */
+    }
+
+    .status-online {
+        background: #28a745;
+        /* Green for online */
+    }
+
+    .status-offline {
+        background: #bbb;
+        /* Grey for offline */
+    }
+
+    .doctor-details {
+        flex-grow: 1;
+    }
+
+    .doctor-name {
+        font-size: 1.2em;
+        margin-bottom: 5px;
+    }
+
+    .doctor-specialization,
+    .doctor-location {
+        color: #555;
+        margin: 0;
+    }
+
+    .doctor-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .appointment-btn,
+    .chat-btn,
+    .favorite-btn {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        color: #007bff;
+        padding: 5px;
+        border-radius: 5px;
+    }
+
+    .chat-btn i,
+    .favorite-btn i {
+        font-size: 20px;
+    }
+
+    .appointment-btn {
+        color: #28a745;
+    }
+
+    .doctor-rating {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        color: #f39c12;
+    }
+
+    .rating {
+        display: inline-block;
+    }
+
+    .rating .fa-star {
+        color: #ddd;
+        /* Default color */
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .rating .fa-star.rated {
+        color: #f5b301;
+        /* Rated color */
+    }
+
+    @media (max-width: 768px) {
+        #doctor-list {
+            padding: 5px;
+        }
+
+        .doctor-card {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .doctor-avatar {
+            margin-bottom: 10px;
+        }
+
+        .doctor-details {
+            margin-left: 0;
+            margin-bottom: 10px;
+        }
+
+        .doctor-rating {
+            justify-content: center;
+            /* Center align rating for mobile */
+        }
+
+        .doctor-actions {
+            flex-direction: row;
+            justify-content: center;
+        }
+
+        .rating .fa-star {
+            font-size: 24px;
+        }
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-close {
+        color: #000;
+    }
+
+    .modal-header {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .modal-title {
+        margin: 0;
+    }
+
+    .favorited i {
+        color: red;
+    }
+</style>
+
+<body>
+    <main id="main" class="consultations-main">
+        <div class="consultations-container">
+            <div class="d-flex justify-content-end mb-3">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDoctorModal">
+                    Add New Doctor
+                </button>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Search by name or specialization">
+                <button id="search-button"><i class="fas fa-search"></i></button>
+            </div>
+
+            <div class="doctor-list" id="doctor-list">
+                <!-- Doctor cards will be dynamically loaded here -->
+            </div>
+            <div id="pagination" class="pagination-container">
+                <!-- Pagination buttons will be dynamically loaded here -->
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="addDoctorModal" tabindex="-1" aria-labelledby="addDoctorModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addDoctorModalLabel">Add New Doctor</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="addDoctorForm">
+                            <div class="mb-3">
+                                <label for="doctorName" class="form-label">Name</label>
+                                <input type="text" class="form-control" id="doctorName" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="doctorSpecialization" class="form-label">Specialization</label>
+                                <input type="text" class="form-control" id="doctorSpecialization" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="doctorLocation" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="doctorLocation" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="doctorAbout" class="form-label">About</label>
+                                <textarea class="form-control" id="doctorAbout" rows="3"></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="doctorExperience" class="form-label">Experience (years)</label>
+                                <input type="number" class="form-control" id="doctorExperience" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="doctorContact" class="form-label">Contact</label>
+                                <input type="text" class="form-control" id="doctorContact" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="doctorAvatar" class="form-label">Avatar</label>
+                                <input type="file" class="form-control" id="doctorAvatar" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Add this inside your consultations.html -->
+        <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="appointmentModalLabel">Book Appointment</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="appointmentForm">
+                            <input type="hidden" id="appointment-doctor-id">
+                            <div class="mb-3">
+                                <label for="appointment-date" class="form-label">Date</label>
+                                <input type="date" class="form-control" id="appointment-date" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="appointment-time" class="form-label">Time</label>
+                                <input type="time" class="form-control" id="appointment-time" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Book</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+
+        function generateStarRating(rating) {
+            let starHtml = '';
+            for (let i = 1; i <= 5; i++) {
+                starHtml += `<i class="fas fa-star ${i <= rating ? 'rated' : ''}" data-value="${i}"></i>`;
+            }
+            return starHtml;
+        }
+
+        let currentPage = 1;
+
+        async function loadDoctors(page = 1) {
+    try {
+        const response = await fetch(`/api/doctors?page=${page}`);
+        const data = await response.json();
+
+        if (response.ok) {
+            displayDoctors(data.doctors);
+            setupPagination(data.pages, data.current_page);
+        } else {
+            console.error('Failed to fetch doctors:', data);
+        }
+    } catch (error) {
+        console.error('Error fetching doctors:', error);
+    }
+}
+
+
+function displayDoctors(doctors) {
+    const doctorsContainer = document.getElementById('doctor-list');
+    doctorsContainer.innerHTML = ''; // Clear current list
+
+    if (doctors.length === 0) {
+        doctorsContainer.innerHTML = '<p>No doctors found.</p>';
+        return;
+    }
+
+    doctors.forEach(doctor => {
+        const doctorCard = document.createElement('div');
+        doctorCard.className = 'doctor-card';
+        doctorCard.innerHTML = `
+            <div class="doctor-avatar-container">
+                <img src="static/${doctor.avatar}" alt="${doctor.name}" class="doctor-avatar">
+                <span class="status-indicator ${doctor.online ? 'status-online' : 'status-offline'}"></span>
+            </div>
+            <div class="doctor-details">
+                <a href="/doctor/${doctor.id}" class="doctor-name">${doctor.name}</a>
+                <p class="doctor-specialization">${doctor.specialization}</p>
+                <p class="doctor-location">${doctor.location}</p>
+                <div class="doctor-rating">
+                    <div class="rating">
+                        ${generateStarRating(doctor.rating)}
+                    </div>
+                </div>
+            </div>
+            <div class="doctor-actions">
+                <button class="appointment-btn" title="Book Appointment" data-bs-toggle="modal" data-bs-target="#appointmentModal"><i class="fas fa-calendar-check"></i></button>
+                <button class="favorite-btn" title="Add to Favorites" data-doctor-id="${doctor.id}"><i class="fas fa-heart"></i></button>
+            </div>
+        `;
+        doctorsContainer.appendChild(doctorCard);
+    });
+
+    // Attach rating handlers after the doctors are displayed
+    attachRatingHandlers();
+}
+
+function setupPagination(totalPages, currentPage) {
+    const paginationContainer = document.getElementById('pagination');
+    paginationContainer.innerHTML = ''; // Clear current pagination
+
+    for (let page = 1; page <= totalPages; page++) {
+        const pageButton = document.createElement('button');
+        pageButton.className = 'page-btn';
+        pageButton.innerText = page;
+        pageButton.disabled = (page === currentPage);
+        pageButton.addEventListener('click', () => {
+            loadDoctors(page);
+        });
+        paginationContainer.appendChild(pageButton);
+    }
+}
+
+// Load doctors when the page is ready
+document.addEventListener('DOMContentLoaded', () => {
+    loadDoctors(currentPage);
+});
+
+        function attachRatingHandlers() {
+            document.querySelectorAll('.doctor-card .fa-star').forEach(star => {
+                star.addEventListener('click', handleRatingClick);
+            });
+        }
+
+        async function handleRatingClick(event) {
+            const star = event.currentTarget;
+            const rating = star.getAttribute('data-value');
+            const doctorCard = star.closest('.doctor-card');
+            const doctorName = doctorCard.querySelector('.doctor-name').textContent;
+
+            // Update UI immediately
+            updateRatingUI(doctorCard, rating);
+
+            // Send rating to the server
+            try {
+                const response = await fetch('/rate-doctor', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        doctor_name: doctorName,
+                        rating: rating
+                    })
+                });
+                if (!response.ok) {
+                    console.error('Failed to submit rating');
+                    // Optionally revert the UI update if submission fails
+                }
+            } catch (error) {
+                console.error('Error submitting rating:', error);
+                // Optionally revert the UI update if submission fails
+            }
+        }
+
+        function updateRatingUI(doctorCard, rating) {
+            const stars = doctorCard.querySelectorAll('.fa-star');
+            stars.forEach(star => {
+                const starValue = star.getAttribute('data-value');
+                star.classList.toggle('rated', starValue <= rating);
+            });
+        }
+
+        // Load doctors when the page is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDoctors();
+        });
+
+        document.getElementById('search-button').addEventListener('click', filterDoctors);
+        document.getElementById('search-input').addEventListener('input', filterDoctors);
+
+        async function loadDoctors() {
+            const response = await fetch('/api/doctors');
+            const doctors = await response.json();
+            displayDoctors(doctors);
+        }
+
+        async function filterDoctors() {
+            const query = document.getElementById('search-input').value.toLowerCase();
+            const response = await fetch('/api/doctors');
+            const doctors = await response.json();
+
+            const filteredDoctors = doctors.filter(doctor =>
+                doctor.name.toLowerCase().includes(query) ||
+                doctor.specialization.toLowerCase().includes(query)
+            );
+
+            displayDoctors(filteredDoctors);
+        }
+        document.getElementById('addDoctorForm').addEventListener('submit', async function(event) {
+    event.preventDefault();
+
+    const formData = new FormData();
+    formData.append('name', document.getElementById('doctorName').value);
+    formData.append('specialization', document.getElementById('doctorSpecialization').value);
+    formData.append('location', document.getElementById('doctorLocation').value);
+    formData.append('about', document.getElementById('doctorAbout').value);
+    formData.append('experience', document.getElementById('doctorExperience').value);
+    formData.append('contact', document.getElementById('doctorContact').value);
+    formData.append('avatar', document.getElementById('doctorAvatar').files[0]);
+
+    try {
+        const response = await fetch('/api/doctors', {
+            method: 'POST',
+            body: formData
+        });
+
+        if (response.ok) {
+            // Close the modal
+            const addDoctorModal = bootstrap.Modal.getInstance(document.getElementById('addDoctorModal'));
+            addDoctorModal.hide();
+
+            // Show success alert
+            Swal.fire({
+                icon: 'success',
+                title: 'Doctor Added',
+                text: 'The new doctor has been successfully added.',
+                timer: 2000,
+                showConfirmButton: false
+            });
+
+            // Reload doctors
+            loadDoctors();
+        } else {
+            console.error('Failed to add doctor');
+        }
+    } catch (error) {
+        console.error('Error adding doctor:', error);
+    }
+});
+
+    </script>
+</body>
+{% endblock %}
