@@ -6,3 +6,4 @@ flask_mail
 flask_migrate
 python-dotenv
 openai
+flask_socketio
