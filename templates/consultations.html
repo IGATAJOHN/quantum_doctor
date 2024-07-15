@@ -331,35 +331,35 @@
         let currentPage = 1;
 
         async function loadDoctors(page = 1) {
-    try {
-        const response = await fetch(`/api/doctors?page=${page}`);
-        const data = await response.json();
+            try {
+                const response = await fetch(`/api/doctors?page=${page}`);
+                const data = await response.json();
 
-        if (response.ok) {
-            displayDoctors(data.doctors);
-            setupPagination(data.pages, data.current_page);
-        } else {
-            console.error('Failed to fetch doctors:', data);
+                if (response.ok) {
+                    displayDoctors(data.doctors);
+                    setupPagination(data.pages, data.current_page);
+                } else {
+                    console.error('Failed to fetch doctors:', data);
+                }
+            } catch (error) {
+                console.error('Error fetching doctors:', error);
+            }
         }
-    } catch (error) {
-        console.error('Error fetching doctors:', error);
-    }
-}
 
 
-function displayDoctors(doctors) {
-    const doctorsContainer = document.getElementById('doctor-list');
-    doctorsContainer.innerHTML = ''; // Clear current list
+        function displayDoctors(doctors) {
+            const doctorsContainer = document.getElementById('doctor-list');
+            doctorsContainer.innerHTML = ''; // Clear current list
 
-    if (doctors.length === 0) {
-        doctorsContainer.innerHTML = '<p>No doctors found.</p>';
-        return;
-    }
+            if (doctors.length === 0) {
+                doctorsContainer.innerHTML = '<p>No doctors found.</p>';
+                return;
+            }
 
-    doctors.forEach(doctor => {
-        const doctorCard = document.createElement('div');
-        doctorCard.className = 'doctor-card';
-        doctorCard.innerHTML = `
+            doctors.forEach(doctor => {
+                const doctorCard = document.createElement('div');
+                doctorCard.className = 'doctor-card';
+                doctorCard.innerHTML = `
             <div class="doctor-avatar-container">
                 <img src="static/${doctor.avatar}" alt="${doctor.name}" class="doctor-avatar">
                 <span class="status-indicator ${doctor.online ? 'status-online' : 'status-offline'}"></span>
@@ -375,37 +375,48 @@ function displayDoctors(doctors) {
                 </div>
             </div>
             <div class="doctor-actions">
-                <button class="appointment-btn" title="Book Appointment" data-bs-toggle="modal" data-bs-target="#appointmentModal"><i class="fas fa-calendar-check"></i></button>
-                <button class="favorite-btn" title="Add to Favorites" data-doctor-id="${doctor.id}"><i class="fas fa-heart"></i></button>
+                <button class="appointment-btn" title="Book Appointment" data-id="${doctor.id}" data-bs-toggle="modal" data-bs-target="#appointmentModal"><i class="fas fa-calendar-check"></i></button>
+                <button class="favorite-btn" title="Add to Favorites" data-id="${doctor.id}"><i class="fas fa-heart"></i></button>
             </div>
         `;
-        doctorsContainer.appendChild(doctorCard);
-    });
+                doctorsContainer.appendChild(doctorCard);
+            });
 
-    // Attach rating handlers after the doctors are displayed
-    attachRatingHandlers();
-}
+            // Attach rating handlers after the doctors are displayed
+            attachRatingHandlers();
+            addModalOpenEvent();
+        }
 
-function setupPagination(totalPages, currentPage) {
-    const paginationContainer = document.getElementById('pagination');
-    paginationContainer.innerHTML = ''; // Clear current pagination
+        function setupPagination(totalPages, currentPage) {
+            const paginationContainer = document.getElementById('pagination');
+            paginationContainer.innerHTML = ''; // Clear current pagination
 
-    for (let page = 1; page <= totalPages; page++) {
-        const pageButton = document.createElement('button');
-        pageButton.className = 'page-btn';
-        pageButton.innerText = page;
-        pageButton.disabled = (page === currentPage);
-        pageButton.addEventListener('click', () => {
-            loadDoctors(page);
+            for (let page = 1; page <= totalPages; page++) {
+                const pageButton = document.createElement('button');
+                pageButton.className = 'page-btn';
+                pageButton.innerText = page;
+                pageButton.disabled = (page === currentPage);
+                pageButton.addEventListener('click', () => {
+                    loadDoctors(page);
+                });
+                paginationContainer.appendChild(pageButton);
+            }
+        }
+
+        // Load doctors when the page is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDoctors(currentPage);
         });
-        paginationContainer.appendChild(pageButton);
-    }
-}
 
-// Load doctors when the page is ready
-document.addEventListener('DOMContentLoaded', () => {
-    loadDoctors(currentPage);
-});
+        function addModalOpenEvent() {
+            const appointmentBtns = document.querySelectorAll('.appointment-btn');
+            appointmentBtns.forEach(btn => {
+                btn.addEventListener('click', (event) => {
+                    const doctorId = event.currentTarget.getAttribute('data-id');
+                    document.getElementById('appointment-doctor-id').value = doctorId;
+                });
+            });
+        }
 
         function attachRatingHandlers() {
             document.querySelectorAll('.doctor-card .fa-star').forEach(star => {
@@ -478,48 +489,88 @@ document.addEventListener('DOMContentLoaded', () => {
 
             displayDoctors(filteredDoctors);
         }
-        document.getElementById('addDoctorForm').addEventListener('submit', async function(event) {
-    event.preventDefault();
+        document.getElementById('addDoctorForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
 
-    const formData = new FormData();
-    formData.append('name', document.getElementById('doctorName').value);
-    formData.append('specialization', document.getElementById('doctorSpecialization').value);
-    formData.append('location', document.getElementById('doctorLocation').value);
-    formData.append('about', document.getElementById('doctorAbout').value);
-    formData.append('experience', document.getElementById('doctorExperience').value);
-    formData.append('contact', document.getElementById('doctorContact').value);
-    formData.append('avatar', document.getElementById('doctorAvatar').files[0]);
+            const formData = new FormData();
+            formData.append('name', document.getElementById('doctorName').value);
+            formData.append('specialization', document.getElementById('doctorSpecialization').value);
+            formData.append('location', document.getElementById('doctorLocation').value);
+            formData.append('about', document.getElementById('doctorAbout').value);
+            formData.append('experience', document.getElementById('doctorExperience').value);
+            formData.append('contact', document.getElementById('doctorContact').value);
+            formData.append('avatar', document.getElementById('doctorAvatar').files[0]);
 
-    try {
-        const response = await fetch('/api/doctors', {
-            method: 'POST',
-            body: formData
+            try {
+                const response = await fetch('/api/doctors', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    // Close the modal
+                    const addDoctorModal = bootstrap.Modal.getInstance(document.getElementById('addDoctorModal'));
+                    addDoctorModal.hide();
+
+                    // Show success alert
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Doctor Added',
+                        text: 'The new doctor has been successfully added.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Reload doctors
+                    loadDoctors();
+                } else {
+                    console.error('Failed to add doctor');
+                }
+            } catch (error) {
+                console.error('Error adding doctor:', error);
+            }
         });
 
-        if (response.ok) {
-            // Close the modal
-            const addDoctorModal = bootstrap.Modal.getInstance(document.getElementById('addDoctorModal'));
-            addDoctorModal.hide();
+        document.getElementById("appointmentForm").addEventListener("submit", async function (event) {
+            event.preventDefault();
 
-            // Show success alert
-            Swal.fire({
-                icon: 'success',
-                title: 'Doctor Added',
-                text: 'The new doctor has been successfully added.',
-                timer: 2000,
-                showConfirmButton: false
-            });
+            const doctorId = document.getElementById("appointment-doctor-id").value;
+            const date = document.getElementById("appointment-date").value;
+            const time = document.getElementById("appointment-time").value;
 
-            // Reload doctors
-            loadDoctors();
-        } else {
-            console.error('Failed to add doctor');
-        }
-    } catch (error) {
-        console.error('Error adding doctor:', error);
-    }
-});
+            try {
+                const response = await fetch("/api/book-appointment", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        doctor_id: doctorId,
+                        date,
+                        time,
+                    }),
+                });
 
+                if (response.ok) {
+                    // Close the modal
+                    const appointmentModal = bootstrap.Modal.getInstance(document.getElementById("appointmentModal"));
+                    appointmentModal.hide();
+
+                    // Show success alert
+                    Swal.fire({
+                        icon: "success",
+                        title: "Appointment Booked",
+                        text: "Your appointment has been successfully booked.",
+                        timer: 2000,
+                        showConfirmButton: false,
+                    });
+                } else {
+                    console.error("Failed to book appointment");
+                }
+            } catch (error) {
+                console.error("Error booking appointment:", error);
+            }
+        });
     </script>
 </body>
 {% endblock %}

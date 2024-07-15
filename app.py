@@ -280,7 +280,7 @@ def book_appointment():
         data = request.get_json()
         appointment = Appointment(
             doctor_id=data["doctor_id"],
-            user_id=data["user_id"],
+            user_id=session.get("_user_id"),
             date=datetime.strptime(data["date"], "%Y-%m-%d").date(),
             time=datetime.strptime(data["time"], "%H:%M").time(),
         )
@@ -288,6 +288,7 @@ def book_appointment():
         db.session.commit()
         return jsonify({"success": True}), 201
     except Exception as e:
+        print(e)
         return jsonify({"error": str(e)}), 500
 
 
