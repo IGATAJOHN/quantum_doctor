@@ -7,4 +7,5 @@ flask_migrate
 python-dotenv
 openai
 flask_socketio
+langchain
 langchain_openai
