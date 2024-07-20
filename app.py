@@ -416,7 +416,6 @@ def password_reset_mail_sent():
 def new_password_set():
     return render_template('new_password_set.html')
 @app.route('/chatbot', methods=['POST'])
-@login_required
 def chatbot():
     data = request.json
     user_input = data.get('message', '')
@@ -501,14 +500,12 @@ def successful_register():
 
 # app.py
 @app.route('/diagnosis', methods=['GET'])
-@login_required
 def diagnosis():
     chat_history = ChatHistory.query.filter_by(user_id=current_user.id).order_by(ChatHistory.timestamp).all()
     return render_template('diagnosis.html', chat_history=chat_history)
 
 # app.py
 @app.route('/chat-history', methods=['GET'])
-@login_required
 def chat_history():
     history = ChatHistory.query.filter_by(user_id=current_user.id).order_by(ChatHistory.timestamp).all()
     return jsonify([{
